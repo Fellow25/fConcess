@@ -138,6 +138,120 @@ Keys.Register('F6', 'Concess', 'Ouvrir le menu Concessionnaire', function()
 	end
 end)
 
+function CoffreConcess()
+	local Coffreconcess = RageUI.CreateMenu("Concessionnaire", "Coffre")
+        RageUI.Visible(Coffreconcess, not RageUI.Visible(Coffreconcess))
+            while Coffreconcess do
+            Citizen.Wait(0)
+            RageUI.IsVisible(Coffreconcess, true, true, true, function()
+
+                RageUI.Separator("↓ Objet ↓")
+
+                    RageUI.ButtonWithStyle("Retirer",nil, {RightLabel = ""}, true, function(Hovered, Active, Selected)
+                        if Selected then
+                            ConcessRetirerobjet()
+                            RageUI.CloseAll()
+                        end
+                    end)
+                    
+                    RageUI.ButtonWithStyle("Déposer",nil, {RightLabel = ""}, true, function(Hovered, Active, Selected)
+                        if Selected then
+                            ConcessDeposerobjet()
+                            RageUI.CloseAll()
+                        end
+                    end)
+                end, function()
+                end)
+            if not RageUI.Visible(Coffreconcess) then
+            Coffreconcess = RMenu:DeleteType("Coffreconcess", true)
+        end
+    end
+end
+
+Citizen.CreateThread(function()
+        while true do
+            local Timer = 500
+            if ESX.PlayerData.job and ESX.PlayerData.job.name == 'cardealer' then  
+            local plycrdjob = GetEntityCoords(GetPlayerPed(-1), false)
+            local jobdist = Vdist(plycrdjob.x, plycrdjob.y, plycrdjob.z, Concess.pos.coffre.position.x, Concess.pos.coffre.position.y, Concess.pos.coffre.position.z)
+            if jobdist <= 10.0 and Concess.jeveuxmarker then
+                Timer = 0
+                DrawMarker(20, Concess.pos.coffre.position.x, Concess.pos.coffre.position.y, Concess.pos.coffre.position.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0.3, 0.3, 255, 255, 255, 255, 0, 1, 2, 0, nil, nil, 0)
+                end
+                if jobdist <= 1.0 then
+                    Timer = 0
+                        RageUI.Text({ message = "Appuyez sur ~y~[E]~s~ pour accéder au coffre", time_display = 1 })
+                        if IsControlJustPressed(1,51) then
+                            CoffreConcess()
+                    end   
+                end
+            end 
+        Citizen.Wait(Timer)   
+    end
+end)
+
+itemstock = {}
+function ConcessRetirerobjet()
+	local StockConcess = RageUI.CreateMenu("Concessionnaire", "Coffre")
+	ESX.TriggerServerCallback('fellow_concess:getStockItems', function(items) 
+	itemstock = items
+	RageUI.Visible(StockConcess, not RageUI.Visible(StockConcess))
+        while StockConcess do
+		    Citizen.Wait(0)
+		        RageUI.IsVisible(StockConcess, true, true, true, function()
+                        for k,v in pairs(itemstock) do 
+                            if v.count ~= 0 then
+                            RageUI.ButtonWithStyle(v.label, nil, {RightLabel = v.count}, true, function(Hovered, Active, Selected)
+                                if Selected then
+                                    local count = KeyboardInput("Combien ?", '' , 8)
+                                    TriggerServerEvent('fellow_concess:getStockItem', v.name, tonumber(count))
+                                    ConcessRetirerobjet()
+                                end
+                            end)
+                        end
+                    end
+                end, function()
+                end)
+            if not RageUI.Visible(StockConcess) then
+            StockConcess = RMenu:DeleteType("StockConcess", true)
+        end
+    end
+end)
+end
+
+local PlayersItem = {}
+function ConcessDeposerobjet()
+    local DepositConcess = RageUI.CreateMenu("Concessionnaire", "Coffre")
+    ESX.TriggerServerCallback('fellow_concess:getPlayerInventory', function(inventory)
+        RageUI.Visible(DepositConcess, not RageUI.Visible(DepositConcess))
+    while DepositConcess do
+        Citizen.Wait(0)
+            RageUI.IsVisible(DepositConcess, true, true, true, function()
+                for i=1, #inventory.items, 1 do
+                    if inventory ~= nil then
+                         local item = inventory.items[i]
+                            if item.count > 0 then
+                                        RageUI.ButtonWithStyle(item.label, nil, {RightLabel = item.count}, true, function(Hovered, Active, Selected)
+                                            if Selected then
+                                            local count = KeyboardInput("Combien ?", '' , 8)
+                                            TriggerServerEvent('fellow_concess:putStockItems', item.name, tonumber(count))
+                                            BDeposerobjet()
+                                        end
+                                    end)
+                                end
+                            else
+                                RageUI.Separator('Chargement en cours')
+                            end
+                        end
+                    end, function()
+                    end)
+                if not RageUI.Visible(DepositConcess) then
+                DepositConcess = RMenu:DeleteType("DepositConcess", true)
+            end
+        end
+    end)
+end
+
 function MenuConcess()
     local MConcess = RageUI.CreateMenu("Menu", "Concessionnaire")
     local MConcessSub = RageUI.CreateSubMenu(MConcess, "Menu", "Concessionnaire")
