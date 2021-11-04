@@ -16,6 +16,9 @@ Concess.pos = {
 	serrurier = {
 		position = {x = -50.23, y = -1089.45, z = 26.42}
 	},
+	coffre = {
+		position = {x = -30.66, y = -1111.06, z = 26.42}
+	},
 	spawnvoiture = {
 		position = {x = -51.38, y = -1094.05, z = 26.42, h = 251.959}
 	},
